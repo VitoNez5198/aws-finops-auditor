@@ -1,6 +1,6 @@
-# Rol de IAM para la ejecución de AWS Lambda
+# Rol de IAM para la ejecución de AWS Lambda usando name_prefix para evitar colisiones
 resource "aws_iam_role" "lambda_exec_role" {
-  name = "finops_auditor_lambda_role_${var.environment}"
+  name_prefix = "finops-lambda-role-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -23,7 +23,7 @@ resource "aws_iam_role" "lambda_exec_role" {
 
 # Política IAM con principio de menor privilegio (Least Privilege)
 resource "aws_iam_policy" "lambda_finops_policy" {
-  name        = "finops_auditor_policy_${var.environment}"
+  name_prefix = "finops-policy-"
   description = "Permisos de lectura para auditoria de EC2, Cost Explorer y escritura en CloudWatch Logs"
 
   policy = jsonencode({

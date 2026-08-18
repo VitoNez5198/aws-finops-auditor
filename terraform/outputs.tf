@@ -12,8 +12,3 @@ output "eventbridge_rule_arn" {
   description = "ARN de la regla de EventBridge programada"
   value       = aws_cloudwatch_event_rule.daily_audit_rule.arn
 }
-
-output "cloudwatch_log_group" {
-  description = "Nombre del Grupo de Logs en CloudWatch"
-  value       = aws_cloudwatch_log_group.lambda_log_group.name
-}

@@ -5,17 +5,6 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/lambda_payload.zip"
 }
 
-# Grupo de Logs en CloudWatch con retención automática de 14 días (Free Tier friendly)
-resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/finops_auditor_${var.environment}"
-  retention_in_days = 14
-
-  tags = {
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  }
-}
-
 # Recurso de la Función AWS Lambda
 resource "aws_lambda_function" "finops_auditor" {
   filename         = data.archive_file.lambda_zip.output_path
@@ -35,7 +24,6 @@ resource "aws_lambda_function" "finops_auditor" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.lambda_log_group,
     aws_iam_role_policy_attachment.attach_finops_policy
   ]
 
