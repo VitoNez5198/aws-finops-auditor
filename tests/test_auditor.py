@@ -101,3 +101,20 @@ def test_notifier_payload_formatting():
     assert "$12.5 USD" in payload["content"] or "$12.50 USD" in payload["content"]
     assert "i-0123456789abcdef0" in payload["content"]
     assert "Environment" in payload["content"]
+
+
+def test_lambda_handler_simulation_mode():
+    """
+    Prueba unitaria: Verifica que el modo simulación devuelva el payload de prueba sin invocar servicios reales.
+    """
+    from lambda_function import lambda_handler
+    import json
+
+    event = {"simulate_alert": True}
+    response = lambda_handler(event, None)
+
+    assert response["statusCode"] == 200
+    body = json.loads(response["body"])
+    assert body["simulation"] is True
+    assert body["ec2_uncompliant_count"] == 1
+
