@@ -1,0 +1,37 @@
+# OpenSpec and Agent Internal Tooling
+.agent/
+openspec/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and virtual environments
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+env/
+ENV/
+.env
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# IDE and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,76 @@
+name: "AWS FinOps Auditor CI/CD Pipeline"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # Job 1: Ejecución de Pruebas Unitarias en Python
+  test:
+    name: "Python Unit Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar Dependencias de Pruebas
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest moto boto3
+
+      - name: Ejecutar Pruebas con Pytest
+        run: |
+          pytest tests/ -v
+
+  # Job 2: Despliegue de Infraestructura con Terraform
+  deploy:
+    name: "Terraform Plan & Apply"
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    steps:
+      - name: Checkout del Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
+
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Inicializar Terraform
+        run: terraform init
+
+      - name: Validar Sintaxis de Terraform
+        run: terraform validate
+
+      - name: Planificar Cambios en Terraform
+        run: terraform plan -var="webhook_url=${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+      - name: Aplicar Infraestructura en AWS
+        run: terraform apply -auto-approve -var="webhook_url=${{ secrets.DISCORD_WEBHOOK_URL }}"
