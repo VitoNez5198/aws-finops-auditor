@@ -18,9 +18,9 @@ variable "webhook_url" {
 }
 
 variable "schedule_expression" {
-  description = "Expresión Cron o Rate de EventBridge para la ejecución automática"
+  description = "Expresión Cron o Rate de EventBridge para la ejecución automática (13:00 UTC = 09:00 AM Chile/GMT-4)"
   type        = string
-  default     = "cron(0 8 * * ? *)" # Todos los días a las 08:00 AM UTC
+  default     = "cron(0 13 * * ? *)" # Todos los días a las 09:00 AM Hora Local Chile (13:00 UTC)
 }
 
 variable "required_tags" {
