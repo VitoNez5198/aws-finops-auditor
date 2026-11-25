@@ -1,0 +1,121 @@
+<mxfile host="app.diagrams.net" modified="2026-11-25T12:25:00.000Z" agent="Antigravity" version="24.7.17" type="device">
+  <diagram id="aws-finops-auditor" name="Arquitectura AWS">
+    <mxGraphModel dx="1200" dy="760" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1060" pageHeight="600" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- GitHub Actions (CI/CD externo izquierda) -->
+        <mxCell id="github" value="GitHub Actions&#xa;(Terraform CI/CD)" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCBmaWxsPSIjMWIxODE3IiBoZWlnaHQ9IjUxMiIgcng9IjE1JSIgd2lkdGg9IjUxMiIvPjxwYXRoIGQ9Im0zMzUgNDk5YzE0IDAgMTIgMTcgMTIgMTdoLTE4MnMtMi0xNyAxMi0xN2MxMyAwIDE2LTYgMTYtMTJsLTEtNTBjLTcxIDE2LTg2LTI4LTg2LTI4LTEyLTMwLTI4LTM3LTI4LTM3LTI0LTE2IDEtMTYgMS0xNiAyNiAyIDQwIDI2IDQwIDI2IDIyIDM5IDU5IDI4IDc0IDIyIDItMTcgOS0yOCAxNi0zNS01Ny02LTExNi0yOC0xMTYtMTI2IDAtMjggMTAtNTEgMjYtNjktMy02LTExLTMyIDMtNjcgMCAwIDIxLTcgNzAgMjYgNDItMTIgODYtMTIgMTI4IDAgNDktMzMgNzAtMjYgNzAtMjYgMTQgMzUgNiA2MSAzIDY3IDE2IDE4IDI2IDQxIDI2IDY5IDAgOTgtNjAgMTIwLTExNyAxMjYgMTAgOCAxOCAyNCAxOCA0OGwtMSA3MGMwIDYgMyAxMiAxNiAxMnoiIGZpbGw9IiNmZmYiLz48L3N2Zz4=;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="65" y="265" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- AWS Cloud -->
+        <mxCell id="aws_cloud" value="AWS Cloud" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud_alt;strokeColor=#232F3E;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#232F3E;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="220" y="30" width="635" height="530" as="geometry" />
+        </mxCell>
+
+        <!-- Region -->
+        <mxCell id="region" value="Region (us-east-1)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_region;strokeColor=#147EBA;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#147EBA;dashed=1;" vertex="1" parent="aws_cloud">
+          <mxGeometry x="25" y="45" width="585" height="460" as="geometry" />
+        </mxCell>
+
+        <!-- EventBridge -->
+        <mxCell id="eventbridge" value="Amazon EventBridge&#xa;(Cron Diario)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;" vertex="1" parent="region">
+          <mxGeometry x="55" y="170" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- AWS Lambda -->
+        <mxCell id="lambda" value="AWS Lambda&#xa;(FinOps Auditor)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="region">
+          <mxGeometry x="245" y="170" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- AWS IAM Role -->
+        <mxCell id="iam" value="AWS IAM&#xa;(Solo Lectura)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#DD344C;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.identity_and_access_management;" vertex="1" parent="region">
+          <mxGeometry x="245" y="340" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Amazon EC2 -->
+        <mxCell id="ec2" value="Amazon EC2&#xa;(Instancias y Tags)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="region">
+          <mxGeometry x="455" y="55" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- AWS Cost Explorer -->
+        <mxCell id="cost_explorer" value="AWS Cost Explorer&#xa;(Gasto Mensual)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#7AA116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cost_explorer;" vertex="1" parent="region">
+          <mxGeometry x="455" y="170" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Amazon CloudWatch -->
+        <mxCell id="cloudwatch" value="Amazon CloudWatch&#xa;(Logs)" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch;" vertex="1" parent="region">
+          <mxGeometry x="455" y="340" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Webhook externo derecha -->
+        <mxCell id="webhook" value="Webhook&#xa;(Discord / Slack)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#232F3E;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.users;" vertex="1" parent="1">
+          <mxGeometry x="935" y="245" width="54" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- Conexiones dentro de Region -->
+        <!-- EventBridge -> Lambda -->
+        <mxCell id="e1" value="Dispara diario" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;" edge="1" parent="region" source="eventbridge" target="lambda">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- IAM -> Lambda -->
+        <mxCell id="e2" value="Permisos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;dashed=1;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="region" source="iam" target="lambda">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="200" y="370" />
+              <mxPoint x="200" y="215" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Lambda -> EC2 -->
+        <mxCell id="e3" value="Audita tags" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="region" source="lambda" target="ec2">
+          <mxGeometry x="0.15" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="355" y="185" />
+              <mxPoint x="355" y="85" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Lambda -> Cost Explorer -->
+        <mxCell id="e4" value="Consulta gasto" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="region" source="lambda" target="cost_explorer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda -> CloudWatch -->
+        <mxCell id="e5" value="Registra logs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;dashed=1;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="region" source="lambda" target="cloudwatch">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="355" y="215" />
+              <mxPoint x="355" y="370" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Conexiones externas -->
+        <!-- GitHub Actions -> AWS Cloud -->
+        <mxCell id="e_gh" value="Despliega" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;dashed=1;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="github" target="aws_cloud">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda -> Webhook (sale por arriba limpio para no cruzar EC2/Cost Explorer) -->
+        <mxCell id="e_wh" value="Envía reporte" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#545B64;strokeWidth=1.2;fontSize=10;fontColor=#545B64;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="lambda" target="webhook">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="520" y="95" />
+              <mxPoint x="962" y="95" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

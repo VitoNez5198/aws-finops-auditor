@@ -23,7 +23,15 @@ Este proyecto automatiza una auditoría diaria programada sin servidores encendi
 
 Toda la infraestructura se define de forma declarativa en [terraform/](terraform/) y se despliega mediante [.github/workflows/deploy.yml](.github/workflows/deploy.yml):
 
-![Arquitectura Serverless de AWS FinOps Auditor](docs/architecture.svg)
+![Arquitectura Serverless de AWS FinOps Auditor](docs/architecture.png)
+
+### Flujo de Trabajo y Rol de cada Servicio
+
+1. **Despliegue automatizado (`GitHub Actions` + `Terraform`):** Cada push a `main` ejecuta primero las pruebas unitarias con `pytest` y `moto`, y luego aplica la infraestructura en AWS mediante Terraform (`init`, `validate`, `plan`, `apply`).
+2. **Programación diaria (`Amazon EventBridge`):** Una regla programada (`cron`) dispara automáticamente la función auditora una vez al día sin necesidad de mantener servidores encendidos.
+3. **Ejecución y permisos (`AWS Lambda` + `AWS IAM`):** La función Lambda (Python 3.11) ejecuta la auditoría utilizando un rol IAM con permisos estrictos de solo lectura sobre EC2 y Cost Explorer.
+4. **Auditoría de recursos y gasto (`Amazon EC2` + `AWS Cost Explorer`):** Lambda revisa las instancias EC2 activas para detectar aquellas sin etiquetas obligatorias (`Owner`, `Environment`) y consulta el gasto acumulado del mes en Cost Explorer.
+5. **Observabilidad y alertas (`Amazon CloudWatch` + `Webhook`):** Los registros de cada ejecución quedan en CloudWatch Logs y el resumen diario se envía mediante un webhook a Discord o Slack.
 
 ---
 
@@ -74,7 +82,8 @@ aws-finops-auditor/
 │   └── workflows/
 │       └── deploy.yml         # Pipeline CI/CD: pytest + terraform plan/apply
 ├── docs/
-│   └── architecture.svg       # Diagrama de arquitectura serverless y CI/CD
+│   ├── architecture.drawio    # Fuente editable del diagrama (Draw.io / AWS4)
+│   └── architecture.png       # Diagrama de arquitectura serverless y CI/CD
 ├── src/
 │   ├── lambda_function.py     # Handler principal de AWS Lambda
 │   ├── ec2_auditor.py         # Auditoría de instancias EC2 sin etiquetas obligatorias
