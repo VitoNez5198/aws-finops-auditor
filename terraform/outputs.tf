@@ -12,3 +12,8 @@ output "eventbridge_rule_arn" {
   description = "ARN de la regla de EventBridge programada"
   value       = aws_cloudwatch_event_rule.daily_audit_rule.arn
 }
+
+output "ssm_webhook_parameter_name" {
+  description = "Nombre del parámetro SecureString en SSM Parameter Store"
+  value       = aws_ssm_parameter.webhook_url.name
+}

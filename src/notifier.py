@@ -6,96 +6,122 @@ import boto3
 logger = logging.getLogger(__name__)
 
 
-def format_report_payload(ec2_results, cost_results):
-    """
-    Formatea los resultados de auditoría en un payload compatible con Webhooks de Discord/Slack.
+def format_report_payload(ec2_results, cost_results, ebs_results=None, eip_results=None):
+    """Formatea los hallazgos FinOps en un payload para Webhook de Discord/Slack."""
+    ebs_results = ebs_results or []
+    eip_results = eip_results or []
 
-    :param ec2_results: Lista de instancias EC2 sin etiquetas obligatorias.
-    :param cost_results: Diccionario con la información de costos del mes.
-    :return: Diccionario estructurado para la notificación.
-    """
     total_cost = cost_results.get("total_cost_usd", 0.0)
     start_date = cost_results.get("start_date", "")
     end_date = cost_results.get("end_date", "")
 
     uncompliant_count = len(ec2_results)
-    status_icon = "⚠️" if uncompliant_count > 0 else "✅"
+    ebs_count = len(ebs_results)
+    eip_count = len(eip_results)
 
-    # Construcción de la lista de instancias para el mensaje
-    instance_details = ""
+    ec2_status = "⚠️" if uncompliant_count > 0 else "✅"
+    ebs_status = "⚠️" if ebs_count > 0 else "✅"
+    eip_status = "⚠️" if eip_count > 0 else "✅"
+
     if uncompliant_count > 0:
-        for inst in ec2_results:
-            missing_str = ", ".join(inst.get("missing_tags", []))
-            instance_details += f"• **`{inst.get('instance_id')}`** ({inst.get('instance_type')}) - Faltan tags: `{missing_str}`\n"
+        instance_details = "".join(
+            f"• `{inst.get('instance_id')}` ({inst.get('instance_type')}) - Faltan tags: `{', '.join(inst.get('missing_tags', []))}`\n"
+            for inst in ec2_results
+        )
     else:
-        instance_details = "✅ Todas las instancias EC2 activas cumplen con las etiquetas obligatorias.\n"
+        instance_details = "• Todas las instancias EC2 activas cumplen con las etiquetas obligatorias.\n"
 
-    # Formato compatible con Webhooks de Discord / Slack Embeds
-    content = f"🛡️ **AWS FinOps & Resource Auditor - Reporte Diario**\n\n" \
-              f"💰 **Gasto Acumulado del Mes**: `${total_cost} USD` *(Periodo: {start_date} al {end_date})*\n" \
-              f"{status_icon} **Instancias EC2 No Conformes**: `{uncompliant_count}` detectadas\n\n" \
-              f"{instance_details}"
+    if ebs_count > 0:
+        total_gb = sum(v.get("size_gb", 0) for v in ebs_results)
+        ebs_details = "".join(
+            f"• `{v.get('volume_id')}` ({v.get('size_gb')} GB · {v.get('volume_type')})\n"
+            for v in ebs_results
+        )
+        ebs_header = f"{ebs_status} **Volúmenes EBS Huérfanos**: `{ebs_count}` ({total_gb} GB sin uso)\n"
+    else:
+        ebs_details = "• Sin volúmenes EBS huérfanos.\n"
+        ebs_header = f"{ebs_status} **Volúmenes EBS Huérfanos**: `0`\n"
+
+    if eip_count > 0:
+        eip_details = "".join(
+            f"• `{eip.get('public_ip')}` (`{eip.get('allocation_id')}`)\n"
+            for eip in eip_results
+        )
+    else:
+        eip_details = "• Sin Elastic IPs sin asociar.\n"
+
+    content = (
+        f"🛡️ **AWS FinOps & Resource Auditor - Reporte Diario**\n\n"
+        f"💰 **Gasto Acumulado del Mes**: `${total_cost} USD` *(Periodo: {start_date} al {end_date})*\n\n"
+        f"{ec2_status} **Instancias EC2 No Conformes**: `{uncompliant_count}`\n"
+        f"{instance_details}\n"
+        f"{ebs_header}"
+        f"{ebs_details}\n"
+        f"{eip_status} **Elastic IPs Sin Asociar**: `{eip_count}`\n"
+        f"{eip_details}"
+    )
 
     return {
         "content": content,
         "username": "AWS FinOps Auditor",
-        "avatar_url": "https://aws.amazon.com/favicon.ico"
+        "avatar_url": "https://aws.amazon.com/favicon.ico",
     }
 
 
-def send_audit_notification(ec2_results, cost_results, webhook_url=None, sns_topic_arn=None, sns_client=None):
-    """
-    Envía el informe de auditoría a través de un Webhook HTTP o un Tema de Amazon SNS.
-
-    :param ec2_results: Resultados de EC2.
-    :param cost_results: Resultados de costos.
-    :param webhook_url: URL del Webhook (Discord / Slack / Teams).
-    :param sns_topic_arn: ARN del Tema de Amazon SNS (opcional).
-    :param sns_client: Cliente boto3 SNS (opcional).
-    :return: True si la notificación fue enviada correctamente.
-    """
-    payload = format_report_payload(ec2_results, cost_results)
+def send_audit_notification(
+    ec2_results,
+    cost_results,
+    webhook_url=None,
+    sns_topic_arn=None,
+    sns_client=None,
+    ebs_results=None,
+    eip_results=None,
+):
+    """Envía el informe de auditoría por Webhook HTTP y/o Amazon SNS."""
+    payload = format_report_payload(
+        ec2_results,
+        cost_results,
+        ebs_results=ebs_results,
+        eip_results=eip_results,
+    )
     success = False
 
-    # 1. Envío por Webhook HTTP (Discord / Slack)
-    if webhook_url:
+    if webhook_url and webhook_url.startswith("http"):
         try:
             req = urllib.request.Request(
                 webhook_url,
                 data=json.dumps(payload).encode("utf-8"),
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "AWS-FinOps-Auditor-Lambda"
+                    "User-Agent": "AWS-FinOps-Auditor-Lambda",
                 },
-                method="POST"
+                method="POST",
             )
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, timeout=10) as response:
                 if response.status in (200, 204):
                     logger.info("Notificación por Webhook enviada con éxito.")
                     success = True
                 else:
                     logger.error(f"El Webhook respondió con código {response.status}")
         except Exception as e:
-            logger.error(f"Error al enviar notificación por Webhook: {str(e)}")
+            logger.error(f"Error al enviar notificación por Webhook: {e}")
 
-    # 2. Envío por Amazon SNS (Opcional)
     if sns_topic_arn:
         if sns_client is None:
             sns_client = boto3.client("sns")
-
         try:
             sns_client.publish(
                 TopicArn=sns_topic_arn,
-                Subject="🛡️ Reporte Diario AWS FinOps Auditor",
-                Message=payload["content"]
+                Subject="Reporte Diario AWS FinOps Auditor",
+                Message=payload["content"],
             )
             logger.info("Notificación por Amazon SNS enviada con éxito.")
             success = True
         except Exception as e:
-            logger.error(f"Error al enviar notificación por Amazon SNS: {str(e)}")
+            logger.error(f"Error al enviar notificación por Amazon SNS: {e}")
 
-    if not webhook_url and not sns_topic_arn:
-        logger.warning("No se proporcionó Webhook URL ni SNS Topic ARN. El reporte solo fue generado en logs.")
+    if (not webhook_url or not webhook_url.startswith("http")) and not sns_topic_arn:
+        logger.warning("Sin Webhook válido ni SNS Topic ARN. Reporte registrado solo en CloudWatch Logs.")
         logger.info(payload["content"])
         success = True
 

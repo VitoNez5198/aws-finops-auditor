@@ -46,16 +46,13 @@ Toda la infraestructura se define de forma declarativa en [terraform/](terraform
 
 ## Seguridad e IAM
 
-Controles implementados en [terraform/iam.tf](terraform/iam.tf) y [terraform/eventbridge.tf](terraform/eventbridge.tf):
+Controles implementados en [terraform/iam.tf](terraform/iam.tf), [terraform/ssm.tf](terraform/ssm.tf) y [.github/workflows/deploy.yml](.github/workflows/deploy.yml):
 
-- **Principio de menor privilegio (solo lectura en auditoría):** el rol de Lambda solo permite `ec2:DescribeInstances`, `ec2:DescribeTags`, `ce:GetCostAndUsage` y escritura en CloudWatch Logs; no puede modificar ni terminar recursos.
+- **CI/CD sin claves estáticas (GitHub OIDC):** `deploy.yml` asume un rol IAM específico (`github-actions-finops-auditor-role`) restringido a `repo:VitoNez5198/aws-finops-auditor:ref:refs/heads/main`, eliminando `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY`.
+- **Estado remoto cifrado y bloqueado (Terraform S3 Backend):** `terraform.tfstate` vive en un bucket S3 privado con versionado, cifrado SSE-S3 y bloqueo nativo (`use_lockfile = true`), evitando roles huérfanos entre despliegues.
+- **Secretos en SSM Parameter Store (`SecureString`):** `WEBHOOK_URL` se almacena cifrado en `/finops-auditor/<env>/webhook-url` y Lambda solo tiene `ssm:GetParameter` sobre ese ARN exacto.
+- **Principio de menor privilegio:** el rol de Lambda solo permite lectura sobre EC2 (`DescribeInstances`, `DescribeTags`, `DescribeVolumes`, `DescribeAddresses`), `ce:GetCostAndUsage`, `ssm:GetParameter` acotado y escritura en el Log Group específico de la función (con retención de 14 días).
 - **Invocación restringida por origen:** `aws_lambda_permission` autoriza únicamente al principal `events.amazonaws.com` condicionado por el `source_arn` exacto de la regla de EventBridge.
-- **Protección de secretos en IaC:** la variable `webhook_url` está marcada con `sensitive = true` en [terraform/variables.tf](terraform/variables.tf) para no exponer la URL en logs de `terraform plan`.
-- **Hardening previsto para producción:**
-  - Migrar la autenticación de `deploy.yml` de Access Keys estáticas a **GitHub OIDC + IAM Role** (`id-token: write` ya está declarado en el workflow).
-  - Configurar un **backend remoto de Terraform** (S3 cifrado + bloqueo de estado) en lugar de estado local efímero en el runner.
-  - Almacenar `WEBHOOK_URL` en **SSM Parameter Store (SecureString)** o **Secrets Manager** en vez de variable de entorno en texto plano.
-  - Acotar el `Resource` de CloudWatch Logs al ARN del Log Group de la función.
 
 ---
 
@@ -85,17 +82,18 @@ aws-finops-auditor/
 │   ├── architecture.drawio    # Fuente editable del diagrama (Draw.io / AWS4)
 │   └── architecture.png       # Diagrama de arquitectura serverless y CI/CD
 ├── src/
-│   ├── lambda_function.py     # Handler principal de AWS Lambda
-│   ├── ec2_auditor.py         # Auditoría de instancias EC2 sin etiquetas obligatorias
+│   ├── lambda_function.py     # Handler de AWS Lambda (lectura SSM + orquestación)
+│   ├── ec2_auditor.py         # Auditoría de EC2 sin tags, EBS huérfanos y Elastic IPs
 │   ├── cost_auditor.py        # Consulta de gasto mensual en Cost Explorer
 │   └── notifier.py            # Envío de alertas formateadas vía webhook
 ├── terraform/
-│   ├── main.tf                # Providers AWS y archive
+│   ├── main.tf                # Providers AWS/archive + backend remoto S3
 │   ├── variables.tf           # Región, entorno, cron, tags obligatorias, webhook
-│   ├── iam.tf                 # Rol y política IAM de solo lectura
-│   ├── lambda.tf              # Empaquetado ZIP y función Lambda
+│   ├── ssm.tf                 # Parámetro SecureString para WEBHOOK_URL
+│   ├── iam.tf                 # Rol y política IAM acotada (EC2/CE/SSM/Logs)
+│   ├── lambda.tf              # Empaquetado ZIP, Log Group (14d) y función Lambda
 │   ├── eventbridge.tf         # Regla Cron, target y permiso de invocación
-│   └── outputs.tf             # ARNs y nombre de función desplegada
+│   └── outputs.tf             # ARNs, nombre de función y parámetro SSM
 ├── tests/
 │   └── test_auditor.py        # Pruebas unitarias con pytest y moto
 ├── .gitignore

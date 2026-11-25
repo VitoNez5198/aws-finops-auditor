@@ -1,11 +1,19 @@
-# Empaquetado automático del código Python en un archivo ZIP
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../src"
   output_path = "${path.module}/lambda_payload.zip"
 }
 
-# Recurso de la Función AWS Lambda
+resource "aws_cloudwatch_log_group" "finops_logs" {
+  name              = "/aws/lambda/finops_auditor_${var.environment}"
+  retention_in_days = 14
+
+  tags = {
+    Environment = var.environment
+    ManagedBy   = "Terraform"
+  }
+}
+
 resource "aws_lambda_function" "finops_auditor" {
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
@@ -18,13 +26,14 @@ resource "aws_lambda_function" "finops_auditor" {
 
   environment {
     variables = {
-      WEBHOOK_URL   = var.webhook_url
-      REQUIRED_TAGS = var.required_tags
+      WEBHOOK_SSM_PARAM = aws_ssm_parameter.webhook_url.name
+      REQUIRED_TAGS     = var.required_tags
     }
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.attach_finops_policy
+    aws_iam_role_policy_attachment.attach_finops_policy,
+    aws_cloudwatch_log_group.finops_logs,
   ]
 
   tags = {

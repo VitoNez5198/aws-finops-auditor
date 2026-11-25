@@ -13,7 +13,6 @@ permissions:
   contents: read
 
 jobs:
-  # Job 1: Ejecución de Pruebas Unitarias en Python
   test:
     name: "Python Unit Tests"
     runs-on: ubuntu-latest
@@ -33,12 +32,10 @@ jobs:
           pip install pytest moto boto3
 
       - name: Ejecutar Pruebas con Pytest
-        run: |
-          pytest tests/ -v
+        run: pytest tests/ -v
 
-  # Job 2: Despliegue de Infraestructura con Terraform
   deploy:
-    name: "Terraform Plan & Apply"
+    name: "Terraform Plan & Apply (OIDC)"
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -51,19 +48,18 @@ jobs:
       - name: Checkout del Código
         uses: actions/checkout@v4
 
-      - name: Configurar Credenciales de AWS
+      - name: Autenticar en AWS con GitHub OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "us-east-1"
 
       - name: Configurar Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.9.5"
+          terraform_version: "1.11.4"
 
-      - name: Inicializar Terraform
+      - name: Inicializar Terraform (S3 Remote State)
         run: terraform init
 
       - name: Validar Sintaxis de Terraform
